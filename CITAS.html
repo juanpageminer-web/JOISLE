@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JOISLE - Reserva de Citas Médicas</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        /* Login/Register Styles */
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .auth-box {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 400px;
+            width: 100%;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+            color: #667eea;
+            font-size: 42px;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+
+        .logo p {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+            margin-top: 10px;
+        }
+
+        .error-msg {
+            background: #ffebee;
+            color: #c62828;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .success-msg {
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        /* Main App Styles */
+        .app-container {
+            display: none;
+        }
+
+        .navbar {
+            background: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 0;
+        }
+
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 30px;
+        }
+
+        .nav-logo {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+
+        .nav-menu a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+
+        .nav-menu a:hover {
+            color: #667eea;
+        }
+
+        .logout-btn {
+            background: #667eea;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: none;
+            font-weight: 500;
+        }
+
+        .content {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 30px;
+        }
+
+        .section {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            display: none;
+            animation: fadeIn 0.5s ease;
+            text-align: justify;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 30px;
+            font-size: 32px;
+        }
+
+        /* Appointment Form */
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            position: relative;
+        }
+
+        .step-indicator::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #e0e0e0;
+            z-index: 0;
+        }
+
+        .step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .step-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e0e0e0;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+        }
+
+        .step.active .step-circle {
+            background: #667eea;
+        }
+
+        .step.completed .step-circle {
+            background: #4caf50;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .doctor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .doctor-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .doctor-card:hover {
+            border-color: #667eea;
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .doctor-card.selected {
+            border-color: #667eea;
+            background: #f3f4ff;
+        }
+
+        .doctor-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+
+        .price-summary {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+        }
+
+        .price-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .price-row.total {
+            font-weight: bold;
+            font-size: 24px;
+            color: #667eea;
+            border-top: 2px solid #ddd;
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+
+        .payment-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .payment-option {
+            border: 2px solid #e0e0e0;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .payment-option:hover {
+            border-color: #667eea;
+        }
+
+        .payment-option.selected {
+            border-color: #667eea;
+            background: #f3f4ff;
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn-back {
+            background: #757575;
+        }
+
+        .confirmation-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+        }
+
+        .confirmation-card h3 {
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .confirmation-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .required {
+            color: red;
+        }
+
+        input[required]:invalid {
+            border-color: #e0e0e0;
+        }
+
+        .home-section {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .home-section h1 {
+            font-size: 48px;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .home-section p {
+            font-size: 20px;
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto 40px;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .feature-card {
+            background: #f8f9ff;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .feature-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .feature-card h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="auth-container">
+        <div class="auth-box">
+            <div class="logo">
+                <h1>JOISLE</h1>
+                <p>Sistema de Citas Médicas</p>
+            </div>
+            <div id="errorMsg" class="error-msg"></div>
+            <div id="successMsg" class="success-msg"></div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Usuario <span class="required">*</span></label>
+                    <input type="text" id="loginUsername" required>
+                </div>
+                <div class="form-group">
+                    <label>Contraseña <span class="required">*</span></label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn">Iniciar Sesión</button>
+                <button type="button" class="btn btn-secondary" onclick="showRegister()">Registrarse</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Register Screen -->
+    <div id="registerScreen" class="auth-container" style="display: none;">
+        <div class="auth-box">
+            <div class="logo">
+                <h1>JOISLE</h1>
+                <p>Registro de Usuario</p>
+            </div>
+            <div id="registerError" class="error-msg"></div>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label>Nombre de Usuario <span class="required">*</span></label>
+                    <input type="text" id="registerUsername" required>
+                </div>
+                <div class="form-group">
+                    <label>Contraseña <span class="required">*</span></label>
+                    <input type="password" id="registerPassword" required>
+                </div>
+                <div class="form-group">
+                    <label>Confirmar Contraseña <span class="required">*</span></label>
+                    <input type="password" id="confirmPassword" required>
+                </div>
+                <button type="submit" class="btn">Registrarse</button>
+                <button type="button" class="btn btn-secondary" onclick="showLogin()">Volver al Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="mainApp" class="app-container">
+        <nav class="navbar">
+            <div class="nav-content">
+                <div class="nav-logo">JOISLE</div>
+                <ul class="nav-menu">
+                    <li><a onclick="showSection('home')">Inicio</a></li>
+                    <li><a onclick="showSection('about')">Quiénes Somos</a></li>
+                    <li><a onclick="showSection('location')">Ubicación</a></li>
+                    <li><a onclick="showSection('appointment')">Agendar Cita</a></li>
+                    <li><a onclick="showSection('services')">Servicios</a></li>
+                    <li><a onclick="showSection('doctors')">Doctores</a></li>
+                </ul>
+                <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+            </div>
+        </nav>
+
+        <div class="content">
+            <!-- Home Section -->
+            <div id="home" class="section active">
+                <div class="home-section">
+                    <h1>Bienvenido a JOISLE</h1>
+                    <p>Tu salud es nuestra prioridad. Agenda tu cita médica de manera rápida y sencilla con los mejores especialistas.</p>
+                    <div class="features">
+                        <div class="feature-card">
+                            <div class="feature-icon">🏥</div>
+                            <h3>Atención de Calidad</h3>
+                            <p>Profesionales altamente calificados</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">📅</div>
+                            <h3>Fácil Agendamiento</h3>
+                            <p>Reserva en minutos</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">💳</div>
+                            <h3>Múltiples Pagos</h3>
+                            <p>Efectivo, tarjeta o transferencia</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- About Section -->
+            <div id="about" class="section">
+                <h2>Quiénes Somos</h2>
+                <!-- AQUÍ VA LA INFORMACIÓN DE QUIÉNES SOMOS -->
+                <p style="color: #666; line-height: 1.8;" text-aling: justify;>
+
+                    <center>
+                    
+                    <iframe src="https://scontent.fhex9-1.fna.fbcdn.net/v/t39.30808-6/306274246_484096067060092_4091752522920982795_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=6ee11a&_nc_ohc=pV1TXOQ7VswQ7kNvwHosmyd&_nc_oc=AdloONv0pZrFJorL8Ma7wd6xM2FI_dixelXOTUNg-89iKV8Y5LLDTQmN_rETWjsdrl0&_nc_zt=23&_nc_ht=scontent.fhex9-1.fna&_nc_gid=aT6GI1C76FGBn_sri4phTQ&oh=00_AfjpO1dgiSLKyTZD1tui_cPAe7yg7puTFHuiPUCAFJ7xaQ&oe=6911E7BF" frameborder="0" width="950px" height="550px"></iframe>
+                    </center>
+
+                    El Centro Médico FUNSAINFA es una institución de salud fundada en el año 2013 en la comunidad de San Felipe de Villa Mella, municipio de Santo Domingo Norte, con el propósito de ofrecer atención médica integral, accesible y de calidad a los habitantes de la zona. Su origen se remonta a la visión compartida de la señora María Margarita Moreno y el doctor Milton Ernesto Suárez, un médico general y cirujano reconocido en la comunidad, quienes decidieron crear un espacio médico que respondiera a las necesidades de salud de los sectores cercanos, donde en aquel entonces la oferta hospitalaria era limitada.
+En una entrevista realizada a una de las empleadas más antiguas del centro (Ana Toribio) se destacó que los fundadores iniciaron el proyecto con un pequeño consultorio privado, ofreciendo servicios básicos de medicina general y atención primaria. Con el tiempo, y gracias al compromiso, esfuerzo y confianza de los pacientes, aquel consultorio fue creciendo hasta transformarse en un centro médico formalmente constituido, que hoy presta servicios de manera ininterrumpida las 24 horas del día, los siete días de la semana.
+Durante sus primeros años, FUNSAINFA operaba con recursos limitados y un personal reducido, pero siempre con una filosofía centrada en la atención humana, el respeto al paciente y la vocación de servicio. Este compromiso permitió que el centro ganara prestigio dentro de la comunidad, convirtiéndose en un punto de referencia para los residentes de Villa Mella, San Felipe y zonas aledañas. El nombre FUNSAINFA representa el espíritu de servicio y la visión familiar con la que fue concebido el proyecto, enfocándose desde el principio en “funcionar al servicio de la salud y la familia”.
+Con el pasar de los años, el hospital fue ampliando su estructura física y su cartera de servicios. A partir de 2016, se incorporaron nuevas áreas de atención como ginecología, pediatría, cardiología, laboratorio clínico, imágenes diagnósticas y servicios de emergencias, consolidando su oferta médica y respondiendo a la creciente demanda de la población. Estas mejoras no solo aumentaron la capacidad operativa del centro, sino que también fortalecieron su rol dentro del sistema sanitario local, ya que FUNSAINFA empezó a recibir pacientes referidos de otras clínicas menores y centros de atención primaria.
+La ubicación estratégica del hospital, en la Carretera de Yamasá, Calle 1ra No. 1, Urbanización Crisquel, San Felipe, le ha permitido atender un flujo constante de pacientes provenientes de distintos barrios y sectores del municipio. Su accesibilidad y cercanía a zonas densamente pobladas lo han convertido en una opción vital para emergencias médicas y consultas rutinarias. Además, el centro ha mantenido una estrecha relación con la comunidad, participando en jornadas médicas, campañas de vacunación y programas preventivos, reafirmando así su compromiso social y su enfoque en la salud pública.
+A lo largo de más de una década de servicio, el Centro Médico FUNSAINFA ha pasado de ser un pequeño consultorio familiar a convertirse en un referente médico comunitario en Santo Domingo Norte, donde la vocación, la calidez humana y la responsabilidad profesional han sido sus principales pilares. Hoy en día, la institución continúa comprometida con la mejora continua y la innovación, buscando integrar soluciones tecnológicas que optimicen sus procesos internos y fortalezcan la calidad de la atención a cada paciente.
+La historia de FUNSAINFA es un ejemplo de esfuerzo, crecimiento y compromiso con la comunidad. Desde sus humildes inicios hasta su consolidación actual, este centro médico refleja el impacto positivo que puede generar una gestión responsable y un enfoque humano dentro del sistema de salud dominicano.
+
+                </p>
+            </div>
+
+            <!-- Location Section -->
+            <div id="location" class="section">
+                <h2>Ubicación</h2>
+                <!-- AQUÍ VA LA INFORMACIÓN DE UBICACIÓN -->
+                <p style="color: #666; line-height: 1.8;">
+                    
+                    comunidad de San Felipe de Villa Mella, municipio de Santo Domingo Norte, en la Carretera de Yamasá, Calle 1ra No. 1, Urbanización Crisquel, San Felipe,
+                        <br>
+                    <center>
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3782.115137822199!2d-69.9139852206543!3d18.568847199999993!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8eaf8edecd3219f7%3A0xaefcdb3c35cd9297!2sCentro%20Medico%20FUNSAINFA!5e0!3m2!1ses-419!2sdo!4v1762396592843!5m2!1ses-419!2sdo" width="800" height="600" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    </center>
+
+                </p>
+            </div>
+
+            <!-- Services Section -->
+            <div id="services" class="section">
+                <h2>Nuestros Servicios</h2>
+                <div class="features">
+                    <div class="feature-card">
+                        <div class="feature-icon">🩺</div>
+                        <h3>Medicina General</h3>
+                        <p>Consultas y diagnósticos generales</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">👶</div>
+                        <h3>Pediatría</h3>
+                        <p>Cuidado especializado para niños</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🤰</div>
+                        <h3>Ginecología</h3>
+                        <p>Salud femenina integral</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">❤️</div>
+                        <h3>Cardiología</h3>
+                        <p>Especialistas del corazón</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🦴</div>
+                        <h3>Traumatología</h3>
+                        <p>Lesiones y fracturas</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">👁️</div>
+                        <h3>Oftalmología</h3>
+                        <p>Cuidado de la visión</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🦷</div>
+                        <h3>Odontología</h3>
+                        <p>Salud dental completa</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🧠</div>
+                        <h3>Neurología</h3>
+                        <p>Sistema nervioso</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🩸</div>
+                        <h3>Laboratorio Clínico</h3>
+                        <p>Análisis y pruebas</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">💉</div>
+                        <h3>Dermatología</h3>
+                        <p>Cuidado de la piel</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Doctors Section -->
+            <div id="doctors" class="section">
+                <h2>Nuestros Doctores</h2>
+                <div class="doctor-grid">
+                    <div class="doctor-card">
+                        <div class="doctor-icon">👨‍⚕️</div>
+                        <h3>Dr. Carlos Pérez</h3>
+                        <p>Medicina General</p>
+                    </div>
+                    <div class="doctor-card">
+                        <div class="doctor-icon">👩‍⚕️</div>
+                        <h3>Dra. Ana Martínez</h3>
+                        <p>Pediatría</p>
+                    </div>
+                    <div class="doctor-card">
+                        <div class="doctor-icon">👩‍⚕️</div>
+                        <h3>Dra. Laura Gómez</h3>
+                        <p>Ginecología</p>
+                    </div>
+                    <div class="doctor-card">
+                        <div class="doctor-icon">👨‍⚕️</div>
+                        <h3>Dr. José Rodríguez</h3>
+                        <p>Cardiología</p>
+                    </div>
+                    <div class="doctor-card">
+                        <div class="doctor-icon">👨‍⚕️</div>
+                        <h3>Dr. Miguel Santos</h3>
+                        <p>Traumatología</p>
+                    </div>
+                    <div class="doctor-card">
+                        <div class="doctor-icon">👩‍⚕️</div>
+                        <h3>Dra. Patricia López</h3>
+                        <p>Oftalmología</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Appointment Section -->
+            <div id="appointment" class="section">
+                <h2>Agendar Cita Médica</h2>
+                
+                <div class="step-indicator">
+                    <div class="step active" id="step1Indicator">
+                        <div class="step-circle">1</div>
+                        <div>Datos Personales</div>
+                    </div>
+                    <div class="step" id="step2Indicator">
+                        <div class="step-circle">2</div>
+                        <div>Servicio</div>
+                    </div>
+                    <div class="step" id="step3Indicator">
+                        <div class="step-circle">3</div>
+                        <div>Doctor</div>
+                    </div>
+                    <div class="step" id="step4Indicator">
+                        <div class="step-circle">4</div>
+                        <div>Fecha y Hora</div>
+                    </div>
+                    <div class="step" id="step5Indicator">
+                        <div class="step-circle">5</div>
+                        <div>Pago y Seguro</div>
+                    </div>
+                </div>
+
+                <!-- Step 1: Personal Data -->
+                <div id="step1" class="appointment-step">
+                    <h3>Datos Personales</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Nombre Completo <span class="required">*</span></label>
+                            <input type="text" id="patientName" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Sexo <span class="required">*</span></label>
+                            <select id="patientSex" required>
+                                <option value="">Seleccione...</option>
+                                <option value="Masculino">Masculino</option>
+                                <option value="Femenino">Femenino</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Edad <span class="required">*</span></label>
+                            <input type="number" id="patientAge" min="1" max="120" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Teléfono <span class="required">*</span></label>
+                            <input type="tel" id="patientPhone" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Correo Electrónico <span class="required">*</span></label>
+                            <input type="email" id="patientEmail" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Dirección <span class="required">*</span></label>
+                            <input type="text" id="patientAddress" required>
+                        </div>
+                    </div>
+                    <div class="nav-buttons">
+                        <button class="btn" onclick="nextStep(1)">Siguiente</button>
+                    </div>
+                </div>
+
+                <!-- Step 2: Service Selection -->
+                <div id="step2" class="appointment-step" style="display: none;">
+                    <h3>Seleccione el Servicio</h3>
+                    <div class="form-group">
+                        <label>Servicio Requerido <span class="required">*</span></label>
+                        <select id="serviceSelect" required>
+                            <option value="">Seleccione un servicio...</option>
+                            <option value="Medicina General|380">Medicina General - RD$380</option>
+                            <option value="Pediatría|450">Pediatría - RD$450</option>
+                            <option value="Ginecología|745">Ginecología - RD$745</option>
+                            <option value="Cardiología|680">Cardiología - RD$680</option>
+                            <option value="Traumatología|550">Traumatología - RD$550</option>
+                            <option value="Oftalmología|500">Oftalmología - RD$500</option>
+                            <option value="Odontología|420">Odontología - RD$420</option>
+                            <option value="Neurología|700">Neurología - RD$700</option>
+                            <option value="Dermatología|480">Dermatología - RD$480</option>
+                        </select>
+                    </div>
+                    <div class="nav-buttons">
+                        <button class="btn btn-back" onclick="prevStep(2)">Anterior</button>
+                        <button class="btn" onclick="nextStep(2)">Siguiente</button>
+                    </div>
+                </div>
+
+                <!-- Step 3: Doctor Selection -->
+                <div id="step3" class="appointment-step" style="display: none;">
+                    <h3>Seleccione su Doctor</h3>
+                    <div class="doctor-grid" id="doctorSelection">
+                        <!-- Doctors will be populated based on service -->
+                    </div>
+                    <div class="nav-buttons">
+                        <button class="btn btn-back" onclick="prevStep(3)">Anterior</button>
+                        <button class="btn" onclick="nextStep(3)">Siguiente</button>
+                    </div>
+                </div>
+
+                <!-- Step 4: Date and Time -->
+                <div id="step4" class="appointment-step" style="display: none;">
+                    <h3>Fecha y Hora de la Cita</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Fecha <span class="required">*</span></label>
+                            <input type="date" id="appointmentDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Hora <span class="required">*</span></label>
+                            <select id="appointmentTime" required>
+                                <option value="">Seleccione hora...</option>
+                                <option value="08:00 AM">08:00 AM</option>
+                                <option value="09:00 AM">09:00 AM</option>
+                                <option value="10:00 AM">10:00 AM</option>
+                                <option value="11:00 AM">11:00 AM</option>
+                                <option value="12:00 PM">12:00 PM</option>
+                                <option value="01:00 PM">01:00 PM</option>
+                                <option value="02:00 PM">02:00 PM</option>
+                                <option value="03:00 PM">03:00 PM</option>
+                                <option value="04:00 PM">04:00 PM</option>
+                                <option value="05:00 PM">05:00 PM</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="nav-buttons">
+                        <button class="btn btn-back" onclick="prevStep(4)">Anterior</button>
+                        <button class="btn" onclick="nextStep(4)">Siguiente</button>
+                    </div>
+                </div>
+
+                <!-- Step 5: Payment and Insurance -->
+                <div id="step5" class="appointment-step" style="display: none;">
+                    <h3>Pago y Seguro</h3>
+                    
+                    <div class="price-summary" id="priceSummary">
+                        <!-- Price details will be shown here -->
+                    </div>
+
+                    <h4 style="margin-top: 30px; margin-bottom: 15px;">¿Tiene Seguro Médico?</h4>
+                    <div class="form-group">
+                        <select id="insuranceSelect">
+                            <option value="">Sin seguro</option>
+                            <option value="SENASSA">SENASSA</option>
+                            <option value="SEMMA">SEMMA</option>
+                            <option value="Humanos">Humanos</option>
+                            <option value="ARS Palic">ARS Palic</option>
+                            <option value="ARS Humano">ARS Humano</option>
+                            <option value="Mapfre">Mapfre</option>
+                        </select>
+                    </div>
+
+                    <h4 style="margin-top: 30px; margin-bottom: 15px;">Método de Pago</h4>
+                    <div class="payment-options">
+                        <div class="payment-option" onclick="selectPayment('Efectivo')">
+                            <div style="font-size: 36px; margin-bottom: 10px;">💵</div>
+                            <strong>Efectivo</strong>
+                        </div>
+                        <div class="payment-option" onclick="selectPayment('Tarjeta')">
+                            <div style="font-size: 36px; margin-bottom: 10px;">💳</div>
+                            <strong>Tarjeta</strong>
+                        </div>
+                        <div class="payment-option" onclick="selectPayment('Transferencia')">
+                            <div style="font-size: 36px; margin-bottom: 10px;">🏦</div>
+                            <strong>Transferencia</strong>
+                        </div>
+                    </div>
+
+                    <div class="nav-buttons">
+                        <button class="btn btn-back" onclick="prevStep(5)">Anterior</button>
+                        <button class="btn" onclick="confirmAppointment()">Confirmar Cita</button>
+                    </div>
+                </div>
+
+                <!-- Confirmation -->
+                <div id="confirmation" class="appointment-step" style="display: none;">
+                    <div class="confirmation-card">
+                        <div class="confirmation-icon">✅</div>
+                        <h3>¡Cita Enviada Correctamente!</h3>
+                        <p style="font-size: 18px; margin-top: 20px;">
+                            Le enviaremos un mensaje de confirmación a su correo electrónico con todos los detalles de su cita.
+                        </p>
+                        <button class="btn" style="margin-top: 30px; background: white; color: #667eea;" onclick="resetAppointment()">
+                            Agendar Nueva Cita
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // User database - store in memory
+        let users = [
+            { username: 'Nelson', password: '1234' },
+            { username: 'Juan', password: '1212' },
+            { username: 'María', password: 'abcd' }
+        ];
+
+        let currentUser = null;
+        let selectedDoctor = null;
+        let selectedPayment = null;
+        let appointmentData = {};
+
+        // Doctor database by service
+        const doctorsByService = {
+            'Medicina General': [
+                { name: 'Dr. Carlos Pérez', icon: '👨‍⚕️' },
+                { name: 'Dr. Roberto Sánchez', icon: '👨‍⚕️' }
+            ],
+            'Pediatría': [
+                { name: 'Dra. Ana Martínez', icon: '👩‍⚕️' },
+                { name: 'Dr. Luis Fernández', icon: '👨‍⚕️' }
+            ],
+            'Ginecología': [
+                { name: 'Dra. Laura Gómez', icon: '👩‍⚕️' },
+                { name: 'Dra. Carmen Díaz', icon: '👩‍⚕️' }
+            ],
+            'Cardiología': [
+                { name: 'Dr. José Rodríguez', icon: '👨‍⚕️' },
+                { name: 'Dra. María Torres', icon: '👩‍⚕️' }
+            ],
+            'Traumatología': [
+                { name: 'Dr. Miguel Santos', icon: '👨‍⚕️' },
+                { name: 'Dr. Pedro Ramírez', icon: '👨‍⚕️' }
+            ],
+            'Oftalmología': [
+                { name: 'Dra. Patricia López', icon: '👩‍⚕️' },
+                { name: 'Dr. Juan Vargas', icon: '👨‍⚕️' }
+            ],
+            'Odontología': [
+                { name: 'Dr. Alberto Méndez', icon: '👨‍⚕️' },
+                { name: 'Dra. Sandra Ortiz', icon: '👩‍⚕️' }
+            ],
+            'Neurología': [
+                { name: 'Dr. Francisco Reyes', icon: '👨‍⚕️' },
+                { name: 'Dra. Isabel Cruz', icon: '👩‍⚕️' }
+            ],
+            'Dermatología': [
+                { name: 'Dra. Elena Morales', icon: '👩‍⚕️' },
+                { name: 'Dr. Rafael Castro', icon: '👨‍⚕️' }
+            ]
+        };
+
+        // Login Form
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            const user = users.find(u => u.username === username && u.password === password);
+
+            if (user) {
+                currentUser = username;
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                showSection('home');
+            } else {
+                showError('errorMsg', 'Usuario no encontrado. Por favor regístrese.');
+            }
+        });
+
+        // Register Form
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = document.getElementById('registerUsername').value;
+            const password = document.getElementById('registerPassword').value;
+            const confirmPass = document.getElementById('confirmPassword').value;
+
+            if (password !== confirmPass) {
+                showError('registerError', 'Las contraseñas no coinciden.');
+                return;
+            }
+
+            const userExists = users.find(u => u.username === username);
+            if (userExists) {
+                showError('registerError', 'Este usuario ya existe.');
+                return;
+            }
+
+            users.push({ username, password });
+            showSuccess('successMsg', '¡Registro exitoso! Ahora puede iniciar sesión.');
+            setTimeout(() => {
+                showLogin();
+            }, 2000);
+        });
+
+        function showError(elementId, message) {
+            const errorEl = document.getElementById(elementId);
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+            setTimeout(() => {
+                errorEl.style.display = 'none';
+            }, 5000);
+        }
+
+        function showSuccess(elementId, message) {
+            const successEl = document.getElementById(elementId);
+            successEl.textContent = message;
+            successEl.style.display = 'block';
+            setTimeout(() => {
+                successEl.style.display = 'none';
+            }, 3000);
+        }
+
+        function showRegister() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('registerScreen').style.display = 'flex';
+        }
+
+        function showLogin() {
+            document.getElementById('registerScreen').style.display = 'none';
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('registerUsername').value = '';
+            document.getElementById('registerPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+        }
+
+        function logout() {
+            currentUser = null;
+            document.getElementById('mainApp').style.display = 'none';
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginPassword').value = '';
+            resetAppointment();
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+
+            if (sectionId === 'appointment') {
+                resetAppointment();
+            }
+        }
+
+        function nextStep(currentStep) {
+            // Validate current step
+            if (currentStep === 1) {
+                const name = document.getElementById('patientName').value;
+                const sex = document.getElementById('patientSex').value;
+                const age = document.getElementById('patientAge').value;
+                const phone = document.getElementById('patientPhone').value;
+                const email = document.getElementById('patientEmail').value;
+                const address = document.getElementById('patientAddress').value;
+
+                if (!name || !sex || !age || !phone || !email || !address) {
+                    alert('Por favor complete todos los campos obligatorios.');
+                    return;
+                }
+
+                appointmentData.name = name;
+                appointmentData.sex = sex;
+                appointmentData.age = age;
+                appointmentData.phone = phone;
+                appointmentData.email = email;
+                appointmentData.address = address;
+            }
+
+            if (currentStep === 2) {
+                const service = document.getElementById('serviceSelect').value;
+                if (!service) {
+                    alert('Por favor seleccione un servicio.');
+                    return;
+                }
+                const [serviceName, price] = service.split('|');
+                appointmentData.service = serviceName;
+                appointmentData.price = parseInt(price);
+
+                // Load doctors for selected service
+                loadDoctors(serviceName);
+            }
+
+            if (currentStep === 3) {
+                if (!selectedDoctor) {
+                    alert('Por favor seleccione un doctor.');
+                    return;
+                }
+                appointmentData.doctor = selectedDoctor;
+            }
+
+            if (currentStep === 4) {
+                const date = document.getElementById('appointmentDate').value;
+                const time = document.getElementById('appointmentTime').value;
+
+                if (!date || !time) {
+                    alert('Por favor seleccione fecha y hora.');
+                    return;
+                }
+
+                appointmentData.date = date;
+                appointmentData.time = time;
+
+                // Show price summary
+                updatePriceSummary();
+            }
+
+            // Hide current step and show next
+            document.getElementById('step' + currentStep).style.display = 'none';
+            document.getElementById('step' + (currentStep + 1)).style.display = 'block';
+
+            // Update step indicators
+            document.getElementById('step' + currentStep + 'Indicator').classList.add('completed');
+            document.getElementById('step' + currentStep + 'Indicator').classList.remove('active');
+            document.getElementById('step' + (currentStep + 1) + 'Indicator').classList.add('active');
+        }
+
+        function prevStep(currentStep) {
+            document.getElementById('step' + currentStep).style.display = 'none';
+            document.getElementById('step' + (currentStep - 1)).style.display = 'block';
+
+            document.getElementById('step' + currentStep + 'Indicator').classList.remove('active');
+            document.getElementById('step' + (currentStep - 1) + 'Indicator').classList.add('active');
+            document.getElementById('step' + (currentStep - 1) + 'Indicator').classList.remove('completed');
+        }
+
+        function loadDoctors(service) {
+            const doctorGrid = document.getElementById('doctorSelection');
+            doctorGrid.innerHTML = '';
+            selectedDoctor = null;
+
+            const doctors = doctorsByService[service] || [];
+            doctors.forEach(doctor => {
+                const card = document.createElement('div');
+                card.className = 'doctor-card';
+                card.innerHTML = `
+                    <div class="doctor-icon">${doctor.icon}</div>
+                    <h3>${doctor.name}</h3>
+                    <p>${service}</p>
+                `;
+                card.onclick = () => selectDoctor(card, doctor.name);
+                doctorGrid.appendChild(card);
+            });
+        }
+
+        function selectDoctor(card, doctorName) {
+            document.querySelectorAll('#doctorSelection .doctor-card').forEach(c => {
+                c.classList.remove('selected');
+            });
+            card.classList.add('selected');
+            selectedDoctor = doctorName;
+        }
+
+        function selectPayment(method) {
+            document.querySelectorAll('.payment-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            event.target.closest('.payment-option').classList.add('selected');
+            selectedPayment = method;
+            appointmentData.payment = method;
+        }
+
+        function updatePriceSummary() {
+            const insurance = document.getElementById('insuranceSelect').value;
+            const basePrice = appointmentData.price;
+            let discount = 0;
+            let finalPrice = basePrice;
+
+            if (insurance) {
+                discount = basePrice * 0.47;
+                finalPrice = basePrice - discount;
+            }
+
+            appointmentData.insurance = insurance || 'Sin seguro';
+            appointmentData.discount = discount;
+            appointmentData.finalPrice = finalPrice;
+
+            const summaryHTML = `
+                <div class="price-row">
+                    <span>Consulta (${appointmentData.service}):</span>
+                    <span>RD${basePrice.toFixed(2)}</span>
+                </div>
+                ${insurance ? `
+                <div class="price-row">
+                    <span>Descuento Seguro (${insurance} - 47%):</span>
+                    <span style="color: green;">-RD${discount.toFixed(2)}</span>
+                </div>
+                ` : ''}
+                <div class="price-row total">
+                    <span>Total a Pagar:</span>
+                    <span>RD${finalPrice.toFixed(2)}</span>
+                </div>
+            `;
+
+            document.getElementById('priceSummary').innerHTML = summaryHTML;
+        }
+
+        // Update price when insurance changes
+        document.getElementById('insuranceSelect').addEventListener('change', updatePriceSummary);
+
+        function confirmAppointment() {
+            if (!selectedPayment) {
+                alert('Por favor seleccione un método de pago.');
+                return;
+            }
+
+            // Hide step 5 and show confirmation
+            document.getElementById('step5').style.display = 'none';
+            document.getElementById('confirmation').style.display = 'block';
+
+            // Update step indicator
+            document.getElementById('step5Indicator').classList.add('completed');
+            document.getElementById('step5Indicator').classList.remove('active');
+        }
+
+        function resetAppointment() {
+            // Reset form
+            document.getElementById('patientName').value = '';
+            document.getElementById('patientSex').value = '';
+            document.getElementById('patientAge').value = '';
+            document.getElementById('patientPhone').value = '';
+            document.getElementById('patientEmail').value = '';
+            document.getElementById('patientAddress').value = '';
+            document.getElementById('serviceSelect').value = '';
+            document.getElementById('appointmentDate').value = '';
+            document.getElementById('appointmentTime').value = '';
+            document.getElementById('insuranceSelect').value = '';
+
+            // Reset variables
+            selectedDoctor = null;
+            selectedPayment = null;
+            appointmentData = {};
+
+            // Reset steps
+            document.querySelectorAll('.appointment-step').forEach(step => {
+                step.style.display = 'none';
+            });
+            document.getElementById('step1').style.display = 'block';
+
+            // Reset indicators
+            document.querySelectorAll('.step').forEach(step => {
+                step.classList.remove('active', 'completed');
+            });
+            document.getElementById('step1Indicator').classList.add('active');
+
+            // Clear selections
+            document.querySelectorAll('.payment-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+        }
+
+        // Set minimum date to today
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('appointmentDate').setAttribute('min', today);
+        });
+    </script>
+</body>
+</html>
